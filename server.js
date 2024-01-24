@@ -1,7 +1,6 @@
 const express = require('express');
 const admin = require('firebase-admin')
 const cors = require('cors');
-const serviceAccountKey = require("./serviceAccountKey.json");
 const bodyParser = require('body-parser');
 require("dotenv").config()
 const app = express();
@@ -16,6 +15,21 @@ app.use(express.urlencoded({
     extended: true
 }))
 
+const serviceAccountKey = {
+  "type": `${process.env.TYPE}`,
+  "project_id": `${process.env.PROJECT_ID}`,
+  "private_key_id": `${process.env.PRIVATE_KEY_ID}`,
+  "private_key": `${(process.env.PRIVATE_KEY).split(String.raw`\n`).join("\n")}`,
+  "client_email": `${process.env.CLIENT_EMAIL}`,
+  "client_id": `${process.env.CLIENT_ID}`,
+  "auth_uri": `${process.env.AUTH_URI}`,
+  "token_uri": `${process.env.TOKEN_URI}`,
+  "auth_provider_x509_cert_url": `${process.env.AUTH_PROVIDER_X509_CERT_URL}`,
+  "client_x509_cert_url": `${process.env.CLIENT_X509_CERT_URL}`,
+  "universe_domain": `${process.env.UNIVERSE_DOMAIN}`
+};
+
+
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey)
 });
@@ -24,7 +38,7 @@ const db = admin.firestore();
 
 
 //Fetch all documents
-app.get('/api/41t70u3bzyqgzenxkwmp7zxt/fetchDocuments', async (req, res) => {
+app.get(`/api/${process.env.ADMIN_KEY}/fetchDocuments`, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit) || 10;
       const page = parseInt(req.query.page) || 1;
@@ -84,7 +98,7 @@ app.get('/api/fetchDocuments/:documentId', async (req, res) => {
 
   
 //Fetch the all the documents whose status code is 200
-app.get('/api/41t70u3bzyqgzenxkwmp7zxt/processed', async (req, res) => {
+app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
   try {
     const { limit = 10, page = 1 } = req.query;
 
@@ -115,7 +129,7 @@ app.get('/api/41t70u3bzyqgzenxkwmp7zxt/processed', async (req, res) => {
 
 
 //Fetch the all the documents based on parameters supplied
-app.get('/api/41t70u3bzyqgzenxkwmp7zxt/custom', async (req, res) => {
+app.get(`/api/${process.env.ADMIN_KEY}/custom`, async (req, res) => {
   try {
     const { limit = 10, page = 1, ...queryParams } = req.query;
 
@@ -155,6 +169,30 @@ app.get('/api/41t70u3bzyqgzenxkwmp7zxt/custom', async (req, res) => {
   }
 });
 
+//Check whether the status code of a document is 200 or not
+app.get('/api/checkStatus/:documentId', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+
+    const docSnapshot = await db.collection('campaignMatching').doc(documentId).get();
+
+    if (!docSnapshot.exists) {
+      return res.status(404).json({ error: 'Document not found', errorMessage: 'Document not found' });
+    }
+
+    const documentData = docSnapshot.data();
+    const statusCode = documentData.status ? documentData.status.code : null;
+
+    if (statusCode === 200) {
+      res.json(true);
+    } else {
+      res.json(false);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error', errorMessage: error.message });
+  }
+});
 
 
 app.listen(port, () => {
