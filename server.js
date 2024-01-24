@@ -97,7 +97,7 @@ app.get('/api/fetchDocuments/:documentId', async (req, res) => {
 
 
   
-//Fetch the all the documents whose status code is 200
+//Fetch all the documents whose status code is 200
 app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
   try {
     const { limit = 10, page = 1 } = req.query;
@@ -128,7 +128,7 @@ app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
 });
 
 
-//Fetch the all the documents based on parameters supplied
+//Fetch all the documents based on parameters supplied
 app.get(`/api/${process.env.ADMIN_KEY}/custom`, async (req, res) => {
   try {
     const { limit = 10, page = 1, ...queryParams } = req.query;
