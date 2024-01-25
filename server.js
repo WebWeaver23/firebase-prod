@@ -39,26 +39,39 @@ const db = admin.firestore();
 
 //Fetch all documents
 app.get(`/api/${process.env.ADMIN_KEY}/fetchDocuments`, async (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit) || 10;
-      const page = parseInt(req.query.page) || 1;
-  
-      const snapshot = await db.collection('campaignMatching')
-        .limit(limit)
-        .offset((page - 1) * limit)
-        .get();
-  
-      const documentNames = snapshot.docs.map(doc => doc.id);
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
 
-      res.json({
-        numberOfDocuments: documentNames.length,
-        documentNames: documentNames
-      });
-    } catch (error) {
-      console.error('Error fetching document names:', error);
-      res.status(500).json({ error: 'Internal Server Error'});
-    }
-  });
+    const snapshot = await db.collection('campaignMatching')
+      .limit(limit)
+      .offset((page - 1) * limit)
+      .get();
+
+    const documents = snapshot.docs.map(doc => {
+      const documentData = doc.data();
+      const { name, email, status } = documentData;
+
+      return {
+        documentID: doc.id,
+        name,
+        email,
+        statusCode: status ? status.code : null,
+      };
+    });
+
+    res.json({
+      numberOfDocuments: snapshot.size,
+      documents: documents,
+    });
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
 
 //Fetch the details of a single document
 app.get('/api/fetchDocuments/:documentId', async (req, res) => {
