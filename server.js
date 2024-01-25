@@ -98,7 +98,7 @@ app.get('/api/fetchDocuments/:documentId', async (req, res) => {
 
   
 //Fetch all the documents whose status code is 200
-app.get('/api/processed', async (req, res) => {
+app.get('/api/41t70u3bzyqgzenxkwmp7zxt/processed', async (req, res) => {
   try {
     const { key, limit = 10, page = 1 } = req.query;
 
