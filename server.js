@@ -98,13 +98,9 @@ app.get('/api/fetchDocuments/:documentId', async (req, res) => {
 
   
 //Fetch all the documents whose status code is 200
-app.get('/api/41t70u3bzyqgzenxkwmp7zxt/processed', async (req, res) => {
+app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
   try {
-    const { key, limit = 10, page = 1 } = req.query;
-
-    if (!key || typeof key !== 'string') {
-      return res.status(400).json({ error: 'Invalid key parameter' });
-    }
+    const { limit = 10, page = 1 } = req.query;
 
     const parsedLimit = parseInt(limit);
     const parsedPage = parseInt(page);
@@ -115,7 +111,6 @@ app.get('/api/41t70u3bzyqgzenxkwmp7zxt/processed', async (req, res) => {
 
     const snapshot = await db.collection('campaignMatching')
       .where('status.code', '==', 200)
-      .where('key', '==', key) // Assuming the key field exists in your documents
       .limit(parsedLimit)
       .offset((parsedPage - 1) * parsedLimit)
       .get();
@@ -128,7 +123,7 @@ app.get('/api/41t70u3bzyqgzenxkwmp7zxt/processed', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error', errorMessage: error.message });
+    res.status(500).json({ error: 'Internal Server Error', errorMessage: error.message});
   }
 });
 
