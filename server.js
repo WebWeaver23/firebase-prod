@@ -129,7 +129,7 @@ app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
 
 
 //Fetch all the documents based on parameters supplied
-app.get(`/api/${process.env.ADMIN_KEY}/custom`, async (req, res) => {
+app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
   try {
     const { limit = 10, page = 1, ...queryParams } = req.query;
 
@@ -140,16 +140,18 @@ app.get(`/api/${process.env.ADMIN_KEY}/custom`, async (req, res) => {
       return res.status(400).json({ error: 'Invalid limit or page value' });
     }
 
-    let query = db.collection('campaignMatching').limit(parsedLimit).offset((parsedPage - 1) * parsedLimit);
+    let query = db.collection('campaignMatching')
+      .where('status.code', '==', 200)
+      .limit(parsedLimit)
+      .offset((parsedPage - 1) * parsedLimit);
 
-    // Filter based on status.code if provided
-    if (queryParams.hasOwnProperty('status.code')) {
-      query = query.where('status.code', '==', parseInt(queryParams['status.code']));
-    }
-
-    // Add more conditions for other query parameters as needed
+    // Add conditions for other custom query parameters
+    Object.entries(queryParams).forEach(([key, value]) => {
+      query = query.where(key, '==', value);
+    });
 
     const snapshot = await query.get();
+
     const documents = snapshot.docs.map(doc => {
       const data = doc.data();
       // Display only requested fields
@@ -165,7 +167,7 @@ app.get(`/api/${process.env.ADMIN_KEY}/custom`, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error', errorMessage: error.message});
+    res.status(500).json({ error: 'Internal Server Error', errorMessage: error.message });
   }
 });
 
