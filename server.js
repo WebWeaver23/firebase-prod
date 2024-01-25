@@ -71,9 +71,7 @@ app.get(`/api/${process.env.ADMIN_KEY}/fetchDocuments`, async (req, res) => {
 });
 
 
-
-
-//Fetch the details of a single document
+//Fetch the details of a single document (based on document ID)
 app.get('/api/fetchDocuments/:documentId', async (req, res) => {
   try {
     const { documentId } = req.params;
@@ -109,7 +107,6 @@ app.get('/api/fetchDocuments/:documentId', async (req, res) => {
 });
 
 
-  
 //Fetch all the documents whose status code is 200
 app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
   try {
