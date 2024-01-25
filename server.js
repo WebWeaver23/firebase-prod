@@ -40,7 +40,7 @@ const db = admin.firestore();
 //Fetch all documents
 app.get(`/api/${process.env.ADMIN_KEY}/fetchDocuments`, async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 1000;
     const page = parseInt(req.query.page) || 1;
 
     const snapshot = await db.collection('campaignMatching')
