@@ -121,7 +121,10 @@ app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
         const [fieldName, subfieldName] = key.split('.');
         query = query.where(`${fieldName}.${subfieldName}`, '==', value);
       } else {
-        query = query.where(key, '==', value);
+        // Check if the parameter has a value before adding the condition
+        if (value) {
+          query = query.where(key, '==', value);
+        }
       }
     });
 
@@ -129,22 +132,19 @@ app.get(`/api/${process.env.ADMIN_KEY}/processed`, async (req, res) => {
 
     const documents = snapshot.docs.map(doc => {
       const data = doc.data();
-      // Display only requested fields
-      const filteredData = Object.fromEntries(
-        Object.entries(data).filter(([key]) => queryParams.hasOwnProperty(key))
-      );
-      return filteredData;
+      return data.name; // Return only the 'name' field
     });
 
     res.json({
       numberOfDocuments: snapshot.size,
-      documents,
+      names: documents,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error', errorMessage: error.message });
   }
 });
+
 
 
 //Fetch all the documents based on parameters supplied
